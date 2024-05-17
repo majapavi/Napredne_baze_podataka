@@ -1,0 +1,152 @@
+-------------------------------------------------------------------------------------------------------------
+ZAD 1.
+Napisati upit koji će stvoriti novi vrh tipa Igrac s vašim imenom, i novi brid tipa IGRA_ZA između tog
+vrha i vrha koji predstavlja klub po vašem izboru.
+
+MATCH (mojKlub:Klub {m_z:"z", naziv_klub: "OK KITRO VARAŽDIN"})
+CREATE (:Igrac {ime_igrac:"Maja", prezime_igrac:"Pavičić", m_z:"z"})-[:IGRA_ZA {godina:2050}]->(mojKlub);
+
+"Added 1 label, created 1 node, set 4 properties, created 1 relationship, completed after 513 ms."
+-------------------------------------------------------------------------------------------------------------
+ZAD 2.
+Napisati upit koji će napraviti listu 5 muških klubova s najmanjim brojem bodova u 2020. godini
+- prema zbroju bodova (atribut bodovi) svih igrača tog kluba u toj godini, sortirano uzlazno.
+
+MATCH (s:Statistika {godina:2020})-[:ZA_KLUB]-(k:Klub {m_z:"m"})
+RETURN
+	k.naziv_klub AS nazivKluba,
+	SUM(s.bodovi) AS ukupnoBodovaUSezoni
+ORDER BY SUM(s.bodovi)
+LIMIT 5;
+
+╒══════════════╤═════════════════════╕
+│"nazivKluba"  │"ukupnoBodovaUSezoni"│
+╞══════════════╪═════════════════════╡
+│"OK Sisak"    │653                  │
+├──────────────┼─────────────────────┤
+│"MOK Rijeka"  │808                  │
+├──────────────┼─────────────────────┤
+│"OK Zadar"    │810                  │
+├──────────────┼─────────────────────┤
+│"MOK Marsonia"│857                  │
+├──────────────┼─────────────────────┤
+│"OK Rovinj"   │867                  │
+└──────────────┴─────────────────────┘
+-------------------------------------------------------------------------------------------------------------
+ZAD 3.
+Napisati upit koji će napraviti top listu (top 10) igračica po asevima u 2019. godini.
+
+MATCH (i:Igrac {m_z:"z"})-[:ZA_IGRACA]-(s:Statistika {godina: 2019})
+RETURN i.ime_igrac AS imeIgraca, i.prezime_igrac AS prezimeIgraca
+ORDER BY s.asevi
+LIMIT 10;
+
+╒════════════╤══════════════════╕
+│"imeIgraca" │"prezimeIgraca"   │
+╞════════════╪══════════════════╡
+│"Vanja"     │"Vučković"        │
+├────────────┼──────────────────┤
+│"Sara"      │"Vranjanin"       │
+├────────────┼──────────────────┤
+│"Tea"       │"Kačić Bartulović"│
+├────────────┼──────────────────┤
+│"Iva"       │"Apostolski"      │
+├────────────┼──────────────────┤
+│"Matea"     │"Cvetković"       │
+├────────────┼──────────────────┤
+│"Helena"    │"Plazanić"        │
+├────────────┼──────────────────┤
+│"Aleksandra"│"Savić"           │
+├────────────┼──────────────────┤
+│"Rebecca"   │"Scoria"          │
+├────────────┼──────────────────┤
+│"Laura"     │"Jelić"           │
+├────────────┼──────────────────┤
+│"Marina"    │"Šolić"           │
+└────────────┴──────────────────┘
+-------------------------------------------------------------------------------------------------------------
+ZAD 4.
+Napisati upit koji će ispisati imena i prezimena igrača i igračica koji u 2020 godini imaju jednak broj
+aseva kao i Mirna Bečić. Poredati po prezimenu i imenu.
+
+MATCH
+	(statistikaMirneBencic:Statistika {godina:2020})
+		-[:ZA_IGRACA]-(mirnaBencic:Igrac {ime_igrac:'Mirna', prezime_igrac:'Bečić'}),
+    (s:Statistika {godina:2020})-[:ZA_IGRACA]-(i:Igrac)
+WHERE statistikaMirneBencic.asevi = s.asevi
+RETURN
+	i.ime_igrac AS imeIgraca,
+    i.prezime_igrac AS prezimeIgraca
+ORDER BY prezimeIgraca, imeIgraca;
+
+╒═══════════╤═══════════════╕
+│"imeIgraca"│"prezimeIgraca"│
+╞═══════════╪═══════════════╡
+│"Lea"      │"Banko"        │
+├───────────┼───────────────┤
+│"Sanja"    │"Brocić"       │
+├───────────┼───────────────┤
+│"Ivo"      │"Ivić"         │
+├───────────┼───────────────┤
+│"Anamarija"│"Kezerić"      │
+├───────────┼───────────────┤
+│"Erika"    │"Momić"        │
+├───────────┼───────────────┤
+│"Petra"    │"Pavlović"     │
+├───────────┼───────────────┤
+│"Stipe"    │"Perić"        │
+├───────────┼───────────────┤
+│"Josip"    │"Vojak"        │
+└───────────┴───────────────┘
+-------------------------------------------------------------------------------------------------------------
+ZAD 5.
+Napisati upit koji će napraviti usporedbu igrača tima OKM Centrometal u 2020. godini u odnosu na igrača
+Kristijana Šućura. Usporedba treba sadržavati imena i prezimena igrača i razliku osvojenih bodova
+u odnosu na Kristijana, poredano uzlazno po toj razlici.
+
+MATCH
+	(statistikaKristijanaSucura:Statistika {godina:2020})
+		-[:ZA_IGRACA]-(kristijanSucur:Igrac {ime_igrac:'Kristijan', prezime_igrac:'Šućur'}),
+    (:Klub {naziv_klub:"OKM Centrometal"})-[:ZA_KLUB]-(s:Statistika {godina:2020})-[:ZA_IGRACA]-(i:Igrac)
+RETURN
+	i.ime_igrac AS imeIgraca,
+	i.prezime_igrac AS prezimeIgraca,
+	s.bodovi - statistikaKristijanaSucura.bodovi AS bodovnaRazlika
+ORDER BY bodovnaRazlika;
+
+╒═══════════╤═══════════════╤════════════════╕
+│"imeIgraca"│"prezimeIgraca"│"bodovnaRazlika"│
+╞═══════════╪═══════════════╪════════════════╡
+│"Vanja"    │"Marciuš"      │-157            │
+├───────────┼───────────────┼────────────────┤
+│"Rene"     │"Rihtarec"     │-157            │
+├───────────┼───────────────┼────────────────┤
+│"Marko"    │"David"        │-156            │
+├───────────┼───────────────┼────────────────┤
+│"Niko"     │"Vidović"      │-153            │
+├───────────┼───────────────┼────────────────┤
+│"Deni"     │"Vuk"          │-151            │
+├───────────┼───────────────┼────────────────┤
+│"Ivan"     │"Novak"        │-150            │
+├───────────┼───────────────┼────────────────┤
+│"Marijan"  │"Palinkaš"     │-149            │
+├───────────┼───────────────┼────────────────┤
+│"Hrvoje"   │"Novak"        │-143            │
+├───────────┼───────────────┼────────────────┤
+│"Filip"    │"Jengić"       │-135            │
+├───────────┼───────────────┼────────────────┤
+│"Ante"     │"Mišura"       │-112            │
+├───────────┼───────────────┼────────────────┤
+│"Ivan"     │"Orešković"    │-81             │
+├───────────┼───────────────┼────────────────┤
+│"Matej"    │"Martinko"     │-79             │
+├───────────┼───────────────┼────────────────┤
+│"Mislav"   │"Lučić"        │-70             │
+├───────────┼───────────────┼────────────────┤
+│"Hrvoje"   │"Zelenika"     │1               │
+├───────────┼───────────────┼────────────────┤
+│"Antonio"  │"Juras"        │45              │
+├───────────┼───────────────┼────────────────┤
+│"Dražen"   │"Vincek"       │167             │
+└───────────┴───────────────┴────────────────┘
+-------------------------------------------------------------------------------------------------------------
